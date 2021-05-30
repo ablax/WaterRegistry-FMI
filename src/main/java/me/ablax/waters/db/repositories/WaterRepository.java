@@ -8,7 +8,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Murad Hamza on 30.5.2021 г.
@@ -58,6 +60,58 @@ public class WaterRepository {
         }
     }
 
+    public static String getNameById(final long id) {
+        final String sql = "select NAME from WATER_BODY WHERE WATER_ID = ?";
+        try (final Connection conn = DBHelper.getConnection();
+        ) {
+            final PreparedStatement state = conn.prepareStatement(sql);
+            state.setLong(1, id);
+            final ResultSet result = state.executeQuery();
+
+            if (result.next()) {
+                return result.getString(1);
+            }
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+        return "";
+    }
+
+    public static Long getIdByName(final String name) {
+        final List<String> names = new ArrayList<>();
+        final String sql = "select WATER_ID from WATER_BODY WHERE NAME = ?";
+        try (final Connection conn = DBHelper.getConnection();
+        ) {
+            final PreparedStatement state = conn.prepareStatement(sql);
+            state.setString(1, name);
+            final ResultSet result = state.executeQuery();
+
+            if (result.next()) {
+                return result.getLong(1);
+            }
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+        return -1L;
+    }
+
+
+    public static List<String> findAllNames() {
+        final List<String> names = new ArrayList<>();
+        final String sql = "select NAME from WATER_BODY";
+        try (final Connection conn = DBHelper.getConnection();
+        ) {
+            final PreparedStatement state = conn.prepareStatement(sql);
+            final ResultSet result = state.executeQuery();
+
+            while (result.next()) {
+                names.add(result.getString(1));
+            }
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+        return names;
+    }
 
     public static GenericTable search(final String selectedItem, final String searchFor, final Resolvable... resolvables) {
         final String searchWord;
