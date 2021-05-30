@@ -14,6 +14,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,8 +26,7 @@ public class WaterPanel extends JPanel {
 
     private static final List<Pair<String, String>> fields = new ArrayList<>();
     private static final String TABLE_NAME = "WATER_BODY";
-
-    final JComboBox<String> stateCombo = new JComboBox<>();
+    private static final Resolvable[] resolvables = new Resolvable[]{new Resolvable("STATE_ID", "STATE", StateRepository::getNameById, StateRepository::getIdByName)};
 
     static {
         fields.add(new Pair<>("NAME", "Водоем"));
@@ -34,35 +34,45 @@ public class WaterPanel extends JPanel {
         fields.add(new Pair<>("WATER_DEPTH", "Дълбочина"));
     }
 
-    private final Map<String, JTextField> textFields = new HashMap<>();
-    JTable table = new JTable();
-    JScrollPane scroller = new JScrollPane(table);
-    long selectedId = -1;
+    final JComboBox<String> stateCombo = new JComboBox<>();
     final JComboBox<String> searchCombo = new JComboBox<>();
     final JTextField searchTextField = new JTextField();
-
+    private final Map<String, JTextField> textFields = new HashMap<>();
+    JTable table = new JTable();
     private final ActionListener searchAction = e -> {
         final String selectedItem = searchCombo.getSelectedItem().toString();
-        final String searchFor = searchTextField.getText();
+        final String searchItem = Arrays.stream(resolvables)
+                .filter(resolvable -> resolvable.getDisplayName().equalsIgnoreCase(selectedItem))
+                .findFirst()
+                .map(Resolvable::getName)
+                .orElse(selectedItem);
+        final String searchtext = searchTextField.getText();
+        final String searchFor = Arrays.stream(resolvables)
+                .filter(resolvable -> resolvable.getName().equalsIgnoreCase(searchItem))
+                .findFirst().map(resolvable -> resolvable.getIdFunction().apply(searchtext).toString())
+                .orElse(searchtext);
 
-        final GenericTable selectedTable = StateRepository.search(selectedItem, searchFor);
+        final GenericTable selectedTable = WaterRepository.search(searchItem, searchFor, resolvables);
         this.table.setModel(selectedTable);
     };
     private final ActionListener addAction = args -> {
         final Long stateId = StateRepository.getIdByName((String) stateCombo.getSelectedItem());
         final String name = textFields.get("NAME").getText();
-        final int area = Integer.parseInt(textFields.get("WATER_AREA").getText());
-        final int depth = Integer.parseInt(textFields.get("WATER_DEPTH").getText());
+        final double area = Double.parseDouble(textFields.get("WATER_AREA").getText());
+        final double depth = Double.parseDouble(textFields.get("WATER_DEPTH").getText());
         WaterRepository.addWater(name, area, depth, stateId);
         reloadTable();
         clearForm();
     };
+    JScrollPane scroller = new JScrollPane(table);
+    long selectedId = -1;
     private final ActionListener editAction = args -> {
         if (selectedId != 1) {
-            final String stateName = textFields.get("STATE_NAME").getText();
-            final int area = Integer.parseInt(textFields.get("AREA").getText());
-            final int population = Integer.parseInt(textFields.get("POPULATION").getText());
-            StateRepository.editState(selectedId, stateName, area, population);
+            final Long stateId = StateRepository.getIdByName((String) stateCombo.getSelectedItem());
+            final String name = textFields.get("NAME").getText();
+            final double area = Double.parseDouble(textFields.get("WATER_AREA").getText());
+            final double depth = Double.parseDouble(textFields.get("WATER_DEPTH").getText());
+            WaterRepository.editWater(selectedId, name, area, depth, stateId);
             selectedId = -1;
             reloadTable();
             clearForm();
@@ -70,7 +80,7 @@ public class WaterPanel extends JPanel {
     };
     private final ActionListener deleteAction = e -> {
         if (selectedId != -1) {
-            StateRepository.delete(selectedId);
+            WaterRepository.delete(selectedId);
             selectedId = -1;
             reloadTable();
         }
@@ -88,7 +98,12 @@ public class WaterPanel extends JPanel {
                 final Object object = objects[i];
                 final String columnName = tableModel.getColumnName(i);
 
-                textFields.get(columnName).setText(object.toString());
+                final JTextField textField = textFields.get(columnName);
+                if (textField != null) {
+                    textField.setText(object.toString());
+                } else {
+                    stateCombo.setSelectedItem(object.toString());
+                }
             }
         }
 
@@ -144,6 +159,9 @@ public class WaterPanel extends JPanel {
 
         final JPanel searchOptions = new JPanel();
         searchOptions.setLayout(new GridLayout(1, 3));
+        for (final Resolvable resolvable : resolvables) {
+            searchCombo.addItem(resolvable.getDisplayName());
+        }
         textFields.keySet().forEach(searchCombo::addItem);
         searchOptions.add(searchCombo);
         searchOptions.add(searchTextField);
@@ -169,8 +187,7 @@ public class WaterPanel extends JPanel {
 
     private void reloadTable() {
         Utils.runAsync(() -> {
-            final Resolvable resolvable = new Resolvable("STATE_ID", "STATE", StateRepository::getNameById);
-            final GenericTable allDataTable = DBHelper.getAllData(TABLE_NAME, resolvable);
+            final GenericTable allDataTable = DBHelper.getAllData(TABLE_NAME, resolvables);
             table.setModel(allDataTable);
         });
     }

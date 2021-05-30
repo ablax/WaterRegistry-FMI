@@ -2,24 +2,26 @@ package me.ablax.waters.db.repositories;
 
 import me.ablax.waters.db.DBHelper;
 import me.ablax.waters.frames.GenericTable;
+import me.ablax.waters.utils.Resolvable;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 /**
  * @author Murad Hamza on 30.5.2021 г.
  */
 public class WaterRepository {
 
-    public static void addWater(final String name, final int waterArea, final int waterDepth, final Long stateId) {
+    public static void addWater(final String name, final Double waterArea, final Double waterDepth, final Long stateId) {
         final String sql = "insert into WATER_BODY (NAME, WATER_AREA, WATER_DEPTH, STATE_ID) values(?,?,?,?)";
         try (final Connection connection = DBHelper.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, name);
-            preparedStatement.setInt(2, waterArea);
-            preparedStatement.setInt(3, waterDepth);
+            preparedStatement.setDouble(2, waterArea);
+            preparedStatement.setDouble(3, waterDepth);
             preparedStatement.setLong(4, stateId);
 
             preparedStatement.execute();
@@ -28,8 +30,24 @@ public class WaterRepository {
         }
     }
 
+    public static void editWater(final long selectedId, final String name, final Double waterArea, final Double waterDepth, final Long stateId) {
+        final String sql = "UPDATE WATER_BODY SET NAME=?, WATER_AREA=?, WATER_DEPTH=?, STATE_ID=? WHERE WATER_ID=?";
+        try (final Connection connection = DBHelper.getConnection();
+             final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, name);
+            preparedStatement.setDouble(2, waterArea);
+            preparedStatement.setDouble(3, waterDepth);
+            preparedStatement.setLong(4, stateId);
+            preparedStatement.setLong(5, selectedId);
+
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void delete(final long stateId) {
-        final String sql = "DELETE FROM STATES WHERE STATE_ID = ?";
+        final String sql = "DELETE FROM WATER_BODY WHERE WATER_ID = ?";
         try (final Connection connection = DBHelper.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setLong(1, stateId);
@@ -40,31 +58,17 @@ public class WaterRepository {
         }
     }
 
-    public static void editState(final long selectedId, final String stateName, final int area, final int population) {
-        final String sql = "UPDATE STATES SET STATE_NAME=?, AREA=?, POPULATION=? WHERE STATE_ID=?";
-        try (final Connection connection = DBHelper.getConnection();
-             final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setString(1, stateName);
-            preparedStatement.setInt(2, area);
-            preparedStatement.setInt(3, population);
-            preparedStatement.setLong(4, selectedId);
 
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static GenericTable search(final String selectedItem, final String searchFor) {
+    public static GenericTable search(final String selectedItem, final String searchFor, final Resolvable... resolvables) {
         final String searchWord;
-        final boolean isString = selectedItem.equalsIgnoreCase("STATE_NAME");
+        final boolean isString = selectedItem.equalsIgnoreCase("NAME");
         if (isString) {
             searchWord = " LIKE ";
         } else {
             searchWord = " = ";
         }
 
-        final String sql = "select * from STATES where " + selectedItem + searchWord + "?";
+        final String sql = "select * from WATER_BODY where " + selectedItem + searchWord + "?";
         try (final Connection conn = DBHelper.getConnection();
         ) {
             final PreparedStatement state = conn.prepareStatement(sql);
@@ -75,30 +79,12 @@ public class WaterRepository {
             }
             final ResultSet result = state.executeQuery();
 
-            return new GenericTable(result);
+            return new GenericTable(result, Arrays.asList(resolvables));
         } catch (Exception e1) {
             e1.printStackTrace();
         }
         return null;
     }
 
-//    public static void fillCombo(JComboBox<String> combo) {
-//
-//        final String sql = "select SUPERVISOR_ID, fname from STATES";
-//        try (final Connection conn = DBHelper.getConnection();
-//             final PreparedStatement preparedStatement = conn.prepareStatement(sql);
-//             final ResultSet resultSet = preparedStatement.executeQuery();) {
-//
-//
-//            combo.removeAllItems();
-//            while (resultSet.next()) {
-//                String item = resultSet.getObject(1).toString() + " " + resultSet.getObject(2);
-//                combo.addItem(item);
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//
-//    }
 
 }
