@@ -13,13 +13,14 @@ import java.sql.SQLException;
  */
 public class WaterRepository {
 
-    public static void addState(final String name, final int waterArea, final int waterDepth) {
-        final String sql = "insert into WATER_BODY (NAME, WATER_AREA, WATER_DEPTH ) values(?,?,?)";
+    public static void addWater(final String name, final int waterArea, final int waterDepth, final Long stateId) {
+        final String sql = "insert into WATER_BODY (NAME, WATER_AREA, WATER_DEPTH, STATE_ID) values(?,?,?,?)";
         try (final Connection connection = DBHelper.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, name);
             preparedStatement.setInt(2, waterArea);
             preparedStatement.setInt(3, waterDepth);
+            preparedStatement.setLong(4, stateId);
 
             preparedStatement.execute();
         } catch (SQLException e) {

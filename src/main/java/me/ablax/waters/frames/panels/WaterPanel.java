@@ -2,8 +2,10 @@ package me.ablax.waters.frames.panels;
 
 import me.ablax.waters.db.DBHelper;
 import me.ablax.waters.db.repositories.StateRepository;
+import me.ablax.waters.db.repositories.WaterRepository;
 import me.ablax.waters.frames.GenericTable;
 import me.ablax.waters.utils.Pair;
+import me.ablax.waters.utils.Resolvable;
 import me.ablax.waters.utils.Utils;
 
 import javax.swing.*;
@@ -47,10 +49,11 @@ public class WaterPanel extends JPanel {
         this.table.setModel(selectedTable);
     };
     private final ActionListener addAction = args -> {
-        final String stateName = textFields.get("STATE_NAME").getText();
-        final int area = Integer.parseInt(textFields.get("AREA").getText());
-        final int population = Integer.parseInt(textFields.get("POPULATION").getText());
-        StateRepository.addState(stateName, area, population);
+        final Long stateId = StateRepository.getIdByName((String) stateCombo.getSelectedItem());
+        final String name = textFields.get("NAME").getText();
+        final int area = Integer.parseInt(textFields.get("WATER_AREA").getText());
+        final int depth = Integer.parseInt(textFields.get("WATER_DEPTH").getText());
+        WaterRepository.addWater(name, area, depth, stateId);
         reloadTable();
         clearForm();
     };
@@ -165,7 +168,11 @@ public class WaterPanel extends JPanel {
     }
 
     private void reloadTable() {
-        Utils.runAsync(() -> table.setModel(DBHelper.getAllData(TABLE_NAME)));
+        Utils.runAsync(() -> {
+            final Resolvable resolvable = new Resolvable("STATE_ID", "STATE", StateRepository::getNameById);
+            final GenericTable allDataTable = DBHelper.getAllData(TABLE_NAME, resolvable);
+            table.setModel(allDataTable);
+        });
     }
 
 }

@@ -1,6 +1,7 @@
 package me.ablax.waters.db;
 
 import me.ablax.waters.frames.GenericTable;
+import me.ablax.waters.utils.Resolvable;
 import me.ablax.waters.utils.Utils;
 
 import java.io.FileInputStream;
@@ -11,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -70,13 +72,13 @@ public class DBHelper {
         });
     }
 
-    public static GenericTable getAllData(String tableName) {
+    public static GenericTable getAllData(final String tableName, final Resolvable... resolvables) {
 
         final String sql = "select * from " + tableName;
         try (final Connection conn = getConnection();
              final PreparedStatement preparedStatement = conn.prepareStatement(sql);
              final ResultSet resultSet = preparedStatement.executeQuery();) {
-            return new GenericTable(resultSet);
+            return new GenericTable(resultSet, Arrays.asList(resolvables));
         } catch (Exception e) {
             e.printStackTrace();
         }

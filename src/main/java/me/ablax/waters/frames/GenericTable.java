@@ -1,12 +1,16 @@
 package me.ablax.waters.frames;
 
+import me.ablax.waters.utils.Resolvable;
+
 import javax.swing.table.AbstractTableModel;
 import java.io.Serial;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -20,7 +24,21 @@ public class GenericTable extends AbstractTableModel {
     private final List<Object[]> data = new ArrayList<>();
     private final List<Object[]> dataWithoutId = new ArrayList<>();
 
+    private final Map<String, Resolvable> resolvables = new HashMap<>();
+
     public GenericTable(final ResultSet result) throws SQLException {
+        final ResultSetMetaData metaData = result.getMetaData();
+        final int columns = metaData.getColumnCount();
+        for (int i = 1; i <= columns; i++) {
+            this.columnNames.add(metaData.getColumnLabel(i));
+        }
+        this.setRS(result);
+    }
+
+    public GenericTable(final ResultSet result, final List<Resolvable> resolvableList) throws SQLException {
+        for (final Resolvable resolvable : resolvableList) {
+            resolvables.put(resolvable.getName(), resolvable);
+        }
         final ResultSetMetaData metaData = result.getMetaData();
         final int columns = metaData.getColumnCount();
         for (int i = 1; i <= columns; i++) {
@@ -41,7 +59,14 @@ public class GenericTable extends AbstractTableModel {
         while (result.next()) {
             final List<Object> values = new ArrayList<>();
             for (final String columnName : this.columnNames) {
-                values.add(result.getObject(columnName));
+                final Object value;
+                if (resolvables.containsKey(columnName)) {
+                    final Resolvable resolvable = resolvables.get(columnName);
+                    value = resolvable.getNameFunction().apply(result.getLong(columnName));
+                } else {
+                    value = result.getObject(columnName);
+                }
+                values.add(value);
             }
             this.data.add(values.toArray());
             values.remove(0);
@@ -69,7 +94,11 @@ public class GenericTable extends AbstractTableModel {
     @Override
     public String getColumnName(final int columnIndex) {
         try {
-            return this.columnNames.get(columnIndex);
+            final String columnName = this.columnNames.get(columnIndex);
+            if (resolvables.containsKey(columnName)) {
+                return resolvables.get(columnName).getDisplayName();
+            }
+            return columnName;
         } catch (Exception e) {
             e.printStackTrace();
             return EMPTY_STRING;
