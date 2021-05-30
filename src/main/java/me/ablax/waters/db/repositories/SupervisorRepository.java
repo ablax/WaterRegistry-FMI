@@ -16,7 +16,7 @@ import java.util.Arrays;
 public class SupervisorRepository {
 
     public static void addSupervisor(final String firstName, final String lastName, final String comment, final Long waterId) {
-        final String sql = "insert into SUPERVISOR (FNAME, LNAME, SUPERVISOR_COMMENT, WATER_ID) values(?,?,?,?)";
+        final String sql = "insert into SUPERVISOR (FNAME, LNAME, COMMENT, WATER_ID) values(?,?,?,?)";
         try (final Connection connection = DBHelper.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, firstName);
@@ -31,7 +31,7 @@ public class SupervisorRepository {
     }
 
     public static void editSupervisor(final long selectedId, final String firstName, final String lastName, final String comment, final Long waterId) {
-        final String sql = "UPDATE SUPERVISOR SET FNAME=?, LNAME=?, SUPERVISOR_COMMENT=?, WATER_ID=? WHERE SUPERVISOR_ID=?";
+        final String sql = "UPDATE SUPERVISOR SET FNAME=?, LNAME=?, COMMENT=?, WATER_ID=? WHERE SUPERVISOR_ID=?";
         try (final Connection connection = DBHelper.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, firstName);

@@ -18,8 +18,9 @@ public class MainFrame extends JFrame {
         final WaterPanel waterPanel = new WaterPanel();
         final SupervisorPanel supervisorPanel = new SupervisorPanel();
 
-        this.setSize(500, 600);
+        this.setSize(475, 325);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        this.setResizable(false);
 
 
         final JTabbedPane tab = new JTabbedPane();

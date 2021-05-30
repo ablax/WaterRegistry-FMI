@@ -57,7 +57,7 @@ public class DBHelper {
                 "WATER_ID BIGINT NULL,\n" +
                 "FNAME NVARCHAR(20) NOT NULL,\n" +
                 "LNAME NVARCHAR(20) NOT NULL,\n" +
-                "SUPERVISOR_COMMENT NVARCHAR(200) NOT NULL,\n" +
+                "COMMENT NVARCHAR(200) NOT NULL,\n" +
                 "CONSTRAINT PK_SUPERVISOR_ID PRIMARY KEY(SUPERVISOR_ID),\n" +
                 "CONSTRAINT FK_WATER_BODY_WATER_ID FOREIGN KEY(WATER_ID) REFERENCES WATER_BODY (WATER_ID)\n" +
                 ");";

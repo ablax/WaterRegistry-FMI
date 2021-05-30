@@ -31,14 +31,14 @@ public class SupervisorPanel extends JPanel {
     static {
         fields.add(new Pair<>("FNAME", "Име"));
         fields.add(new Pair<>("LNAME", "Фамилия"));
-        fields.add(new Pair<>("SUPERVISOR_COMMENT", "Коментар"));
+        fields.add(new Pair<>("COMMENT", "Коментар"));
     }
 
-    final JComboBox<String> waterCombo = new JComboBox<>();
-    final JComboBox<String> searchCombo = new JComboBox<>();
-    final JTextField searchTextField = new JTextField();
+    private final JComboBox<String> waterCombo = new JComboBox<>();
+    private final JComboBox<String> searchCombo = new JComboBox<>();
+    private final JTextField searchTextField = new JTextField();
     private final Map<String, JTextField> textFields = new HashMap<>();
-    JTable table = new JTable();
+    private final JTable table = new JTable();
     private final ActionListener searchAction = e -> {
         final String selectedItem = searchCombo.getSelectedItem().toString();
         final String searchItem = Arrays.stream(resolvables)
@@ -55,23 +55,13 @@ public class SupervisorPanel extends JPanel {
         final GenericTable selectedTable = SupervisorRepository.search(searchItem, searchFor, resolvables);
         this.table.setModel(selectedTable);
     };
-    private final ActionListener addAction = args -> {
-        final Long waterId = WaterRepository.getIdByName((String) waterCombo.getSelectedItem());
-        final String fName = textFields.get("FNAME").getText();
-        final String lName = textFields.get("LNAME").getText();
-        final String comment = textFields.get("SUPERVISOR_COMMENT").getText();
-        SupervisorRepository.addSupervisor(fName, lName, comment, waterId);
-        reloadTable();
-        clearForm();
-    };
-    JScrollPane scroller = new JScrollPane(table);
     long selectedId = -1;
     private final ActionListener editAction = args -> {
         if (selectedId != 1) {
             final Long waterId = WaterRepository.getIdByName((String) waterCombo.getSelectedItem());
             final String fName = textFields.get("FNAME").getText();
             final String lName = textFields.get("LNAME").getText();
-            final String comment = textFields.get("SUPERVISOR_COMMENT").getText();
+            final String comment = textFields.get("COMMENT").getText();
             SupervisorRepository.editSupervisor(selectedId, fName, lName, comment, waterId);
             selectedId = -1;
             reloadTable();
@@ -169,11 +159,22 @@ public class SupervisorPanel extends JPanel {
 
         this.add(searchOptions);
 
+        ActionListener addAction = args -> {
+            final Long waterId = WaterRepository.getIdByName((String) waterCombo.getSelectedItem());
+            final String fName = textFields.get("FNAME").getText();
+            final String lName = textFields.get("LNAME").getText();
+            final String comment = textFields.get("COMMENT").getText();
+            SupervisorRepository.addSupervisor(fName, lName, comment, waterId);
+            reloadTable();
+            clearForm();
+        };
         addBtn.addActionListener(addAction);
         deleteBtn.addActionListener(deleteAction);
         editBtn.addActionListener(editAction);
         searchBtn.addActionListener(searchAction);
 
+
+        final JScrollPane scroller = new JScrollPane(table);
         this.add(scroller);
         scroller.setPreferredSize(new Dimension(450, 160));
         table.addMouseListener(tableListener);
