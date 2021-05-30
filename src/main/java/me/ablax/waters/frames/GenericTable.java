@@ -29,8 +29,15 @@ public class GenericTable extends AbstractTableModel {
         this.setRS(result);
     }
 
-    public void setRS(final ResultSet result) throws SQLException {
+    public Long getId(final int rowIndex) {
+        return (Long) data.get(rowIndex)[0];
+    }
 
+    public Object[] getObject(final int rowIndex) {
+        return dataWithoutId.get(rowIndex);
+    }
+
+    public void setRS(final ResultSet result) throws SQLException {
         while (result.next()) {
             final List<Object> values = new ArrayList<>();
             for (final String columnName : this.columnNames) {
@@ -41,6 +48,7 @@ public class GenericTable extends AbstractTableModel {
             this.dataWithoutId.add(values.toArray());
             this.rowCount.incrementAndGet();
         }
+        columnNames.remove(0);
     }
 
     @Override
@@ -55,7 +63,7 @@ public class GenericTable extends AbstractTableModel {
 
     @Override
     public Object getValueAt(final int rowIndex, final int columnIndex) {
-        return this.data.get(rowIndex)[columnIndex];
+        return this.dataWithoutId.get(rowIndex)[columnIndex];
     }
 
     @Override

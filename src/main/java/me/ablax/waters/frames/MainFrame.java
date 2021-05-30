@@ -1,6 +1,7 @@
 package me.ablax.waters.frames;
 
 import me.ablax.waters.frames.panels.StatesPanel;
+import me.ablax.waters.frames.panels.WaterPanel;
 
 import javax.swing.*;
 
@@ -12,13 +13,17 @@ import javax.swing.*;
 public class MainFrame extends JFrame {
 
     public MainFrame() {
+        final StatesPanel statesPanel = new StatesPanel();
+        final WaterPanel waterPanel = new WaterPanel();
+
         this.setSize(500, 600);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
 
         final JTabbedPane tab = new JTabbedPane();
 
-        tab.add(new StatesPanel(), "Области");
+        tab.add(statesPanel, "Области");
+        tab.add(waterPanel, "Водоеми");
 
         this.add(tab);
 

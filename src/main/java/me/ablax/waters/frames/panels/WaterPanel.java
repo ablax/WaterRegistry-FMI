@@ -17,17 +17,19 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Murad Hamza on 29.5.2021 г.
+ * @author Murad Hamza on 30.5.2021 г.
  */
-public class StatesPanel extends JPanel {
+public class WaterPanel extends JPanel {
 
     private static final List<Pair<String, String>> fields = new ArrayList<>();
-    private static final String TABLE_NAME = "STATES";
+    private static final String TABLE_NAME = "WATER_BODY";
+
+    final JComboBox<String> stateCombo = new JComboBox<>();
 
     static {
-        fields.add(new Pair<>("STATE_NAME", "Област"));
-        fields.add(new Pair<>("AREA", "Площ"));
-        fields.add(new Pair<>("POPULATION", "Население"));
+        fields.add(new Pair<>("NAME", "Водоем"));
+        fields.add(new Pair<>("WATER_AREA", "Площ"));
+        fields.add(new Pair<>("WATER_DEPTH", "Дълбочина"));
     }
 
     private final Map<String, JTextField> textFields = new HashMap<>();
@@ -101,7 +103,7 @@ public class StatesPanel extends JPanel {
 
     };
 
-    public StatesPanel() {
+    public WaterPanel() {
         final JButton addBtn = new JButton("Добавяне");
         final JButton deleteBtn = new JButton("Изтриване");
         final JButton editBtn = new JButton("Редактиране");
@@ -109,8 +111,12 @@ public class StatesPanel extends JPanel {
 
         //Upanel
         final JPanel upPanel = new JPanel();
-        upPanel.setLayout(new GridLayout(3, 2));
+        upPanel.setLayout(new GridLayout(4, 2));
 
+        StateRepository.findAllNames().forEach(stateCombo::addItem);
+
+        upPanel.add(new JLabel("Област"));
+        upPanel.add(stateCombo);
         for (final Pair<String, String> field : fields) {
             final String key = field.getA();
             final String value = field.getB();
