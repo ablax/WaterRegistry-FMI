@@ -11,16 +11,16 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class DBHelper {
 
 
     private static final DatabaseConfiguration config;
-    private static List<Connection> connections = new ArrayList<>();
+    private static List<Connection> connections = new CopyOnWriteArrayList<>();
 
     static {
         final Properties properties = new Properties();

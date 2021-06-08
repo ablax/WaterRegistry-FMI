@@ -2,6 +2,7 @@ package me.ablax.waters.db.repositories;
 
 import me.ablax.waters.db.DBHelper;
 import me.ablax.waters.frames.GenericTable;
+import me.ablax.waters.frames.MainFrame;
 import me.ablax.waters.utils.Resolvable;
 
 import java.sql.Connection;
@@ -27,6 +28,8 @@ public class SupervisorRepository {
             preparedStatement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            MainFrame.updateTables();
         }
     }
 
@@ -43,22 +46,24 @@ public class SupervisorRepository {
             preparedStatement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            MainFrame.updateTables();
         }
     }
 
-    public static void delete(final long stateId) {
+    public static void delete(final long stateId) throws SQLException {
         final String sql = "DELETE FROM SUPERVISOR WHERE SUPERVISOR_ID = ?";
         try (final Connection connection = DBHelper.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setLong(1, stateId);
 
             preparedStatement.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } finally {
+            MainFrame.updateTables();
         }
     }
 
-    public static GenericTable search(final String selectedItem, final String searchFor, final Resolvable... resolvables) {
+    public static GenericTable search(final String selectedItem, final String searchFor, final String selectedItem2, final String searchFor2, final Resolvable... resolvables) {
         final String searchWord;
         final boolean isString = !selectedItem.equalsIgnoreCase("WATER_ID");
         if (isString) {
@@ -67,7 +72,15 @@ public class SupervisorRepository {
             searchWord = " = ";
         }
 
-        final String sql = "select * from SUPERVISOR where " + selectedItem + searchWord + "?";
+        final String searchWord2;
+        final boolean isString2 = !selectedItem2.equalsIgnoreCase("WATER_ID");
+        if (isString2) {
+            searchWord2 = " LIKE ";
+        } else {
+            searchWord2 = " = ";
+        }
+
+        final String sql = "select * from SUPERVISOR where " + selectedItem + searchWord + "? AND " + selectedItem2 + searchWord2 + "?";
         try (final Connection conn = DBHelper.getConnection();
         ) {
             final PreparedStatement state = conn.prepareStatement(sql);
@@ -75,6 +88,11 @@ public class SupervisorRepository {
                 state.setString(1, "%" + searchFor + "%");
             } else {
                 state.setInt(1, Integer.parseInt(searchFor));
+            }
+            if (isString2) {
+                state.setString(2, "%" + searchFor2 + "%");
+            } else {
+                state.setInt(2, Integer.parseInt(searchFor2));
             }
             final ResultSet result = state.executeQuery();
 

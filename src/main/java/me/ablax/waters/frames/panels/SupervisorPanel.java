@@ -13,6 +13,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,7 +23,7 @@ import java.util.Map;
 /**
  * @author Murad Hamza on 30.5.2021 г.
  */
-public class SupervisorPanel extends JPanel {
+public class SupervisorPanel extends UpdateableJPanel {
 
     private static final List<Pair<String, String>> fields = new ArrayList<>();
     private static final String TABLE_NAME = "SUPERVISOR";
@@ -37,6 +38,8 @@ public class SupervisorPanel extends JPanel {
     private final JComboBox<String> waterCombo = new JComboBox<>();
     private final JComboBox<String> searchCombo = new JComboBox<>();
     private final JTextField searchTextField = new JTextField();
+    private final JComboBox<String> searchCombo2 = new JComboBox<>();
+    private final JTextField searchTextField2 = new JTextField();
     private final Map<String, JTextField> textFields = new HashMap<>();
     private final JTable table = new JTable();
     private final ActionListener searchAction = e -> {
@@ -52,7 +55,20 @@ public class SupervisorPanel extends JPanel {
                 .findFirst().map(resolvable -> resolvable.getIdFunction().apply(searchtext).toString())
                 .orElse(searchtext);
 
-        final GenericTable selectedTable = SupervisorRepository.search(searchItem, searchFor, resolvables);
+
+        final String selectedItem2 = searchCombo2.getSelectedItem().toString();
+        final String searchItem2 = Arrays.stream(resolvables)
+                .filter(resolvable -> resolvable.getDisplayName().equalsIgnoreCase(selectedItem2))
+                .findFirst()
+                .map(Resolvable::getName)
+                .orElse(selectedItem2);
+        final String searchtext2 = searchTextField2.getText();
+        final String searchFor2 = Arrays.stream(resolvables)
+                .filter(resolvable -> resolvable.getName().equalsIgnoreCase(searchItem2))
+                .findFirst().map(resolvable -> resolvable.getIdFunction().apply(searchtext2).toString())
+                .orElse(searchtext2);
+
+        final GenericTable selectedTable = SupervisorRepository.search(searchItem, searchFor, searchItem2, searchFor2, resolvables);
         this.table.setModel(selectedTable);
     };
     long selectedId = -1;
@@ -70,7 +86,12 @@ public class SupervisorPanel extends JPanel {
     };
     private final ActionListener deleteAction = e -> {
         if (selectedId != -1) {
-            SupervisorRepository.delete(selectedId);
+            try {
+                SupervisorRepository.delete(selectedId);
+            } catch (SQLException throwables) {
+                JOptionPane.showMessageDialog(null, "Sorry but you can't delete this entry", "Cannot delete", JOptionPane.ERROR_MESSAGE);
+                ;
+            }
             selectedId = -1;
             reloadTable();
         }
@@ -121,8 +142,6 @@ public class SupervisorPanel extends JPanel {
         final JPanel upPanel = new JPanel();
         upPanel.setLayout(new GridLayout(4, 2));
 
-        WaterRepository.findAllNames().forEach(waterCombo::addItem);
-
         upPanel.add(new JLabel("Водоем"));
         upPanel.add(waterCombo);
         for (final Pair<String, String> field : fields) {
@@ -152,9 +171,15 @@ public class SupervisorPanel extends JPanel {
         for (final Resolvable resolvable : resolvables) {
             searchCombo.addItem(resolvable.getDisplayName());
         }
+        for (final Resolvable resolvable : resolvables) {
+            searchCombo2.addItem(resolvable.getDisplayName());
+        }
         textFields.keySet().forEach(searchCombo::addItem);
+        textFields.keySet().forEach(searchCombo2::addItem);
         searchOptions.add(searchCombo);
         searchOptions.add(searchTextField);
+        searchOptions.add(searchCombo2);
+        searchOptions.add(searchTextField2);
         searchOptions.add(searchBtn);
 
         this.add(searchOptions);
@@ -186,10 +211,12 @@ public class SupervisorPanel extends JPanel {
         textFields.values().forEach(jTextField -> jTextField.setText(""));
     }
 
-    private void reloadTable() {
+    public void reloadTable() {
         Utils.runAsync(() -> {
             final GenericTable allDataTable = DBHelper.getAllData(TABLE_NAME, resolvables);
             table.setModel(allDataTable);
+            waterCombo.removeAllItems();
+            WaterRepository.findAllNames().forEach(waterCombo::addItem);
         });
     }
 

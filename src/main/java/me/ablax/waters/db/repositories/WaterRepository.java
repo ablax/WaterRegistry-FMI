@@ -2,6 +2,7 @@ package me.ablax.waters.db.repositories;
 
 import me.ablax.waters.db.DBHelper;
 import me.ablax.waters.frames.GenericTable;
+import me.ablax.waters.frames.MainFrame;
 import me.ablax.waters.utils.Resolvable;
 
 import java.sql.Connection;
@@ -29,6 +30,8 @@ public class WaterRepository {
             preparedStatement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            MainFrame.updateTables();
         }
     }
 
@@ -45,18 +48,20 @@ public class WaterRepository {
             preparedStatement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            MainFrame.updateTables();
         }
     }
 
-    public static void delete(final long stateId) {
+    public static void delete(final long stateId) throws SQLException {
         final String sql = "DELETE FROM WATER_BODY WHERE WATER_ID = ?";
         try (final Connection connection = DBHelper.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setLong(1, stateId);
 
             preparedStatement.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } finally {
+            MainFrame.updateTables();
         }
     }
 

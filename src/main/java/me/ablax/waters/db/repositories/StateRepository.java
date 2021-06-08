@@ -2,6 +2,7 @@ package me.ablax.waters.db.repositories;
 
 import me.ablax.waters.db.DBHelper;
 import me.ablax.waters.frames.GenericTable;
+import me.ablax.waters.frames.MainFrame;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -26,18 +27,20 @@ public class StateRepository {
             preparedStatement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            MainFrame.updateTables();
         }
     }
 
-    public static void delete(final long stateId) {
+    public static void delete(final long stateId) throws SQLException {
         final String sql = "DELETE FROM STATES WHERE STATE_ID = ?";
         try (final Connection connection = DBHelper.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setLong(1, stateId);
 
             preparedStatement.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } finally {
+            MainFrame.updateTables();
         }
     }
 
@@ -53,6 +56,8 @@ public class StateRepository {
             preparedStatement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            MainFrame.updateTables();
         }
     }
 
@@ -119,7 +124,6 @@ public class StateRepository {
     }
 
     public static Long getIdByName(final String name) {
-        final List<String> names = new ArrayList<>();
         final String sql = "select STATE_ID from STATES WHERE STATE_NAME = ?";
         try (final Connection conn = DBHelper.getConnection();
         ) {

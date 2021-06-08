@@ -13,6 +13,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,7 +23,7 @@ import java.util.Map;
 /**
  * @author Murad Hamza on 30.5.2021 г.
  */
-public class WaterPanel extends JPanel {
+public class WaterPanel extends UpdateableJPanel {
 
     private static final List<Pair<String, String>> fields = new ArrayList<>();
     private static final String TABLE_NAME = "WATER_BODY";
@@ -80,7 +81,12 @@ public class WaterPanel extends JPanel {
     };
     private final ActionListener deleteAction = e -> {
         if (selectedId != -1) {
-            WaterRepository.delete(selectedId);
+            try {
+                WaterRepository.delete(selectedId);
+            } catch (SQLException throwables) {
+                JOptionPane.showMessageDialog(null, "Sorry but you can't delete this entry", "Cannot delete", JOptionPane.ERROR_MESSAGE);
+                ;
+            }
             selectedId = -1;
             reloadTable();
         }
@@ -130,8 +136,6 @@ public class WaterPanel extends JPanel {
         //Upanel
         final JPanel upPanel = new JPanel();
         upPanel.setLayout(new GridLayout(4, 2));
-
-        StateRepository.findAllNames().forEach(stateCombo::addItem);
 
         upPanel.add(new JLabel("Област"));
         upPanel.add(stateCombo);
@@ -185,10 +189,11 @@ public class WaterPanel extends JPanel {
         textFields.values().forEach(jTextField -> jTextField.setText(""));
     }
 
-    private void reloadTable() {
+    public void reloadTable() {
         Utils.runAsync(() -> {
-            final GenericTable allDataTable = DBHelper.getAllData(TABLE_NAME, resolvables);
-            table.setModel(allDataTable);
+            table.setModel(DBHelper.getAllData(TABLE_NAME, resolvables));
+            stateCombo.removeAllItems();
+            StateRepository.findAllNames().forEach(stateCombo::addItem);
         });
     }
 

@@ -11,6 +11,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +20,7 @@ import java.util.Map;
 /**
  * @author Murad Hamza on 29.5.2021 г.
  */
-public class StatesPanel extends JPanel {
+public class StatesPanel extends UpdateableJPanel {
 
     private static final List<Pair<String, String>> fields = new ArrayList<>();
     private static final String TABLE_NAME = "STATES";
@@ -65,7 +66,12 @@ public class StatesPanel extends JPanel {
     };
     private final ActionListener deleteAction = e -> {
         if (selectedId != -1) {
-            StateRepository.delete(selectedId);
+            try {
+                StateRepository.delete(selectedId);
+            } catch (SQLException throwables) {
+                JOptionPane.showMessageDialog(null, "Sorry but you can't delete this entry", "Cannot delete", JOptionPane.ERROR_MESSAGE);
+                ;
+            }
             selectedId = -1;
             reloadTable();
         }
@@ -158,7 +164,7 @@ public class StatesPanel extends JPanel {
         textFields.values().forEach(jTextField -> jTextField.setText(""));
     }
 
-    private void reloadTable() {
+    public void reloadTable() {
         Utils.runAsync(() -> table.setModel(DBHelper.getAllData(TABLE_NAME)));
     }
 
