@@ -4,6 +4,7 @@ import me.ablax.waters.db.DBHelper;
 import me.ablax.waters.frames.GenericTable;
 import me.ablax.waters.frames.MainFrame;
 import me.ablax.waters.utils.Resolvable;
+import me.ablax.waters.utils.Utils;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -87,12 +88,12 @@ public class SupervisorRepository {
             if (isString) {
                 state.setString(1, "%" + searchFor + "%");
             } else {
-                state.setInt(1, Integer.parseInt(searchFor));
+                state.setInt(1, Utils.getInt(searchFor));
             }
             if (isString2) {
                 state.setString(2, "%" + searchFor2 + "%");
             } else {
-                state.setInt(2, Integer.parseInt(searchFor2));
+                state.setInt(2, Utils.getInt(searchFor2));
             }
             final ResultSet result = state.executeQuery();
 

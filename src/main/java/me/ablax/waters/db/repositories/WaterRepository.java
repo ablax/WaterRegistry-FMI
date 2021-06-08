@@ -4,6 +4,7 @@ import me.ablax.waters.db.DBHelper;
 import me.ablax.waters.frames.GenericTable;
 import me.ablax.waters.frames.MainFrame;
 import me.ablax.waters.utils.Resolvable;
+import me.ablax.waters.utils.Utils;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,7 +20,7 @@ import java.util.List;
 public class WaterRepository {
 
     public static void addWater(final String name, final Double waterArea, final Double waterDepth, final Long stateId) {
-        final String sql = "insert into WATER_BODY (NAME, WATER_AREA, WATER_DEPTH, STATE_ID) values(?,?,?,?)";
+        final String sql = "insert into WATER_BODY (NAME, AREA, DEPTH, STATE_ID) values(?,?,?,?)";
         try (final Connection connection = DBHelper.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, name);
@@ -36,7 +37,7 @@ public class WaterRepository {
     }
 
     public static void editWater(final long selectedId, final String name, final Double waterArea, final Double waterDepth, final Long stateId) {
-        final String sql = "UPDATE WATER_BODY SET NAME=?, WATER_AREA=?, WATER_DEPTH=?, STATE_ID=? WHERE WATER_ID=?";
+        final String sql = "UPDATE WATER_BODY SET NAME=?, AREA=?, DEPTH=?, STATE_ID=? WHERE WATER_ID=?";
         try (final Connection connection = DBHelper.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, name);
@@ -118,7 +119,7 @@ public class WaterRepository {
         return names;
     }
 
-    public static GenericTable search(final String selectedItem, final String searchFor, final Resolvable... resolvables) {
+    public static GenericTable search(final String selectedItem, final String searchFor, final String selectedItem2, final String searchFor2, final Resolvable... resolvables) {
         final String searchWord;
         final boolean isString = selectedItem.equalsIgnoreCase("NAME");
         if (isString) {
@@ -127,14 +128,27 @@ public class WaterRepository {
             searchWord = " = ";
         }
 
-        final String sql = "select * from WATER_BODY where " + selectedItem + searchWord + "?";
+        final String searchWord2;
+        final boolean isString2 = selectedItem2.equalsIgnoreCase("NAME");
+        if (isString2) {
+            searchWord2 = " LIKE ";
+        } else {
+            searchWord2 = " = ";
+        }
+
+        final String sql = "select * from WATER_BODY where " + selectedItem + searchWord + "? AND " + selectedItem2 + searchWord2 + "?";
         try (final Connection conn = DBHelper.getConnection();
         ) {
             final PreparedStatement state = conn.prepareStatement(sql);
             if (isString) {
                 state.setString(1, "%" + searchFor + "%");
             } else {
-                state.setInt(1, Integer.parseInt(searchFor));
+                state.setInt(1, Utils.getInt(searchFor));
+            }
+            if (isString2) {
+                state.setString(2, "%" + searchFor2 + "%");
+            } else {
+                state.setInt(2, Utils.getInt(searchFor2));
             }
             final ResultSet result = state.executeQuery();
 

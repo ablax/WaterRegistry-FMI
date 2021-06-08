@@ -14,6 +14,13 @@ public final class Utils {
 
     private static final Executor executor = Executors.newFixedThreadPool(4);
 
+    public static int getInt(final String number) {
+        try {
+            return Integer.parseInt(number);
+        } catch (Exception ex) {
+            return 0;
+        }
+    }
 
     public static void runAsync(final Runnable runnabble) {
         executor.execute(runnabble);

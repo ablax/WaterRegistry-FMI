@@ -31,13 +31,15 @@ public class WaterPanel extends UpdateableJPanel {
 
     static {
         fields.add(new Pair<>("NAME", "Водоем"));
-        fields.add(new Pair<>("WATER_AREA", "Площ"));
-        fields.add(new Pair<>("WATER_DEPTH", "Дълбочина"));
+        fields.add(new Pair<>("AREA", "Площ"));
+        fields.add(new Pair<>("DEPTH", "Дълбочина"));
     }
 
     final JComboBox<String> stateCombo = new JComboBox<>();
     final JComboBox<String> searchCombo = new JComboBox<>();
     final JTextField searchTextField = new JTextField();
+    final JComboBox<String> searchCombo2 = new JComboBox<>();
+    final JTextField searchTextField2 = new JTextField();
     private final Map<String, JTextField> textFields = new HashMap<>();
     JTable table = new JTable();
     private final ActionListener searchAction = e -> {
@@ -53,14 +55,27 @@ public class WaterPanel extends UpdateableJPanel {
                 .findFirst().map(resolvable -> resolvable.getIdFunction().apply(searchtext).toString())
                 .orElse(searchtext);
 
-        final GenericTable selectedTable = WaterRepository.search(searchItem, searchFor, resolvables);
+
+        final String selectedItem2 = searchCombo2.getSelectedItem().toString();
+        final String searchItem2 = Arrays.stream(resolvables)
+                .filter(resolvable -> resolvable.getDisplayName().equalsIgnoreCase(selectedItem2))
+                .findFirst()
+                .map(Resolvable::getName)
+                .orElse(selectedItem2);
+        final String searchtext2 = searchTextField2.getText();
+        final String searchFor2 = Arrays.stream(resolvables)
+                .filter(resolvable -> resolvable.getName().equalsIgnoreCase(searchItem2))
+                .findFirst().map(resolvable -> resolvable.getIdFunction().apply(searchtext2).toString())
+                .orElse(searchtext2);
+
+        final GenericTable selectedTable = WaterRepository.search(searchItem, searchFor, searchItem2, searchFor2, resolvables);
         this.table.setModel(selectedTable);
     };
     private final ActionListener addAction = args -> {
         final Long stateId = StateRepository.getIdByName((String) stateCombo.getSelectedItem());
         final String name = textFields.get("NAME").getText();
-        final double area = Double.parseDouble(textFields.get("WATER_AREA").getText());
-        final double depth = Double.parseDouble(textFields.get("WATER_DEPTH").getText());
+        final double area = Double.parseDouble(textFields.get("AREA").getText());
+        final double depth = Double.parseDouble(textFields.get("DEPTH").getText());
         WaterRepository.addWater(name, area, depth, stateId);
         reloadTable();
         clearForm();
@@ -71,8 +86,8 @@ public class WaterPanel extends UpdateableJPanel {
         if (selectedId != 1) {
             final Long stateId = StateRepository.getIdByName((String) stateCombo.getSelectedItem());
             final String name = textFields.get("NAME").getText();
-            final double area = Double.parseDouble(textFields.get("WATER_AREA").getText());
-            final double depth = Double.parseDouble(textFields.get("WATER_DEPTH").getText());
+            final double area = Double.parseDouble(textFields.get("AREA").getText());
+            final double depth = Double.parseDouble(textFields.get("DEPTH").getText());
             WaterRepository.editWater(selectedId, name, area, depth, stateId);
             selectedId = -1;
             reloadTable();
@@ -166,9 +181,15 @@ public class WaterPanel extends UpdateableJPanel {
         for (final Resolvable resolvable : resolvables) {
             searchCombo.addItem(resolvable.getDisplayName());
         }
+        for (final Resolvable resolvable : resolvables) {
+            searchCombo2.addItem(resolvable.getDisplayName());
+        }
         textFields.keySet().forEach(searchCombo::addItem);
+        textFields.keySet().forEach(searchCombo2::addItem);
         searchOptions.add(searchCombo);
         searchOptions.add(searchTextField);
+        searchOptions.add(searchCombo2);
+        searchOptions.add(searchTextField2);
         searchOptions.add(searchBtn);
 
         this.add(searchOptions);

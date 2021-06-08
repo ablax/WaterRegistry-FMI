@@ -26,7 +26,7 @@ public class StatesPanel extends UpdateableJPanel {
     private static final String TABLE_NAME = "STATES";
 
     static {
-        fields.add(new Pair<>("STATE_NAME", "Област"));
+        fields.add(new Pair<>("STATE", "Област"));
         fields.add(new Pair<>("AREA", "Площ"));
         fields.add(new Pair<>("POPULATION", "Население"));
     }
@@ -37,16 +37,21 @@ public class StatesPanel extends UpdateableJPanel {
     long selectedId = -1;
     final JComboBox<String> searchCombo = new JComboBox<>();
     final JTextField searchTextField = new JTextField();
+    final JComboBox<String> searchCombo2 = new JComboBox<>();
+    final JTextField searchTextField2 = new JTextField();
 
     private final ActionListener searchAction = e -> {
         final String selectedItem = searchCombo.getSelectedItem().toString();
         final String searchFor = searchTextField.getText();
 
-        final GenericTable selectedTable = StateRepository.search(selectedItem, searchFor);
+        final String selectedItem2 = searchCombo2.getSelectedItem().toString();
+        final String searchFor2 = searchTextField2.getText();
+
+        final GenericTable selectedTable = StateRepository.search(selectedItem, searchFor, selectedItem2, searchFor2);
         this.table.setModel(selectedTable);
     };
     private final ActionListener addAction = args -> {
-        final String stateName = textFields.get("STATE_NAME").getText();
+        final String stateName = textFields.get("STATE").getText();
         final int area = Integer.parseInt(textFields.get("AREA").getText());
         final int population = Integer.parseInt(textFields.get("POPULATION").getText());
         StateRepository.addState(stateName, area, population);
@@ -55,7 +60,7 @@ public class StatesPanel extends UpdateableJPanel {
     };
     private final ActionListener editAction = args -> {
         if (selectedId != 1) {
-            final String stateName = textFields.get("STATE_NAME").getText();
+            final String stateName = textFields.get("STATE").getText();
             final int area = Integer.parseInt(textFields.get("AREA").getText());
             final int population = Integer.parseInt(textFields.get("POPULATION").getText());
             StateRepository.editState(selectedId, stateName, area, population);
@@ -142,8 +147,11 @@ public class StatesPanel extends UpdateableJPanel {
         final JPanel searchOptions = new JPanel();
         searchOptions.setLayout(new GridLayout(1, 3));
         textFields.keySet().forEach(searchCombo::addItem);
+        textFields.keySet().forEach(searchCombo2::addItem);
         searchOptions.add(searchCombo);
         searchOptions.add(searchTextField);
+        searchOptions.add(searchCombo2);
+        searchOptions.add(searchTextField2);
         searchOptions.add(searchBtn);
 
         this.add(searchOptions);

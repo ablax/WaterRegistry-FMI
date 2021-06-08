@@ -38,7 +38,7 @@ public class DBHelper {
     public static void initDB() {
         final String dbInitQuery = "CREATE TABLE IF NOT EXISTS STATES(\n" +
                 "STATE_ID BIGINT IDENTITY NOT NULL,\n" +
-                "STATE_NAME NVARCHAR(20) NOT NULL UNIQUE,\n" +
+                "STATE NVARCHAR(20) NOT NULL UNIQUE,\n" +
                 "AREA INT NOT NULL,\n" +
                 "POPULATION BIGINT CHECK(POPULATION>0),\n" +
                 "CONSTRAINT PK_STATE_ID PRIMARY KEY(STATE_ID)\n" +
@@ -47,8 +47,8 @@ public class DBHelper {
                 "WATER_ID BIGINT IDENTITY NOT NULL,\n" +
                 "STATE_ID BIGINT NOT NULL,\n" +
                 "NAME NVARCHAR(20) NOT NULL,\n" +
-                "WATER_AREA DECIMAL(5,2) NOT NULL,\n" +
-                "WATER_DEPTH DECIMAL(5,2) NOT NULL,\n" +
+                "AREA DECIMAL(5,2) NOT NULL,\n" +
+                "DEPTH DECIMAL(5,2) NOT NULL,\n" +
                 "CONSTRAINT PK_WATER_ID PRIMARY KEY(WATER_ID),\n" +
                 "CONSTRAINT FK_STATES_STATE_ID FOREIGN KEY (STATE_ID) REFERENCES STATES (STATE_ID)\n" +
                 ");\n" +

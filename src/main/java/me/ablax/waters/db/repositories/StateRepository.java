@@ -3,6 +3,7 @@ package me.ablax.waters.db.repositories;
 import me.ablax.waters.db.DBHelper;
 import me.ablax.waters.frames.GenericTable;
 import me.ablax.waters.frames.MainFrame;
+import me.ablax.waters.utils.Utils;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,7 +18,7 @@ import java.util.List;
 public class StateRepository {
 
     public static void addState(final String stateName, final int area, final int population) {
-        final String sql = "insert into STATES (STATE_NAME, AREA, POPULATION ) values(?,?,?)";
+        final String sql = "insert into STATES (STATE, AREA, POPULATION ) values(?,?,?)";
         try (final Connection connection = DBHelper.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, stateName);
@@ -45,7 +46,7 @@ public class StateRepository {
     }
 
     public static void editState(final long selectedId, final String stateName, final int area, final int population) {
-        final String sql = "UPDATE STATES SET STATE_NAME=?, AREA=?, POPULATION=? WHERE STATE_ID=?";
+        final String sql = "UPDATE STATES SET STATE=?, AREA=?, POPULATION=? WHERE STATE_ID=?";
         try (final Connection connection = DBHelper.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, stateName);
@@ -61,23 +62,36 @@ public class StateRepository {
         }
     }
 
-    public static GenericTable search(final String selectedItem, final String searchFor) {
+    public static GenericTable search(final String selectedItem, final String searchFor, final String selectedItem2, final String searchFor2) {
         final String searchWord;
-        final boolean isString = selectedItem.equalsIgnoreCase("STATE_NAME");
+        final boolean isString = selectedItem.equalsIgnoreCase("STATE");
         if (isString) {
             searchWord = " LIKE ";
         } else {
             searchWord = " = ";
         }
 
-        final String sql = "select * from STATES where " + selectedItem + searchWord + "?";
+        final String searchWord2;
+        final boolean isString2 = selectedItem2.equalsIgnoreCase("STATE");
+        if (isString2) {
+            searchWord2 = " LIKE ";
+        } else {
+            searchWord2 = " = ";
+        }
+
+        final String sql = "select * from STATES where " + selectedItem + searchWord + "? AND " + selectedItem2 + searchWord2 + "?";
         try (final Connection conn = DBHelper.getConnection();
         ) {
             final PreparedStatement state = conn.prepareStatement(sql);
             if (isString) {
                 state.setString(1, "%" + searchFor + "%");
             } else {
-                state.setInt(1, Integer.parseInt(searchFor));
+                state.setInt(1, Utils.getInt(searchFor));
+            }
+            if (isString2) {
+                state.setString(2, "%" + searchFor2 + "%");
+            } else {
+                state.setInt(2, Utils.getInt(searchFor2));
             }
             final ResultSet result = state.executeQuery();
 
@@ -91,7 +105,7 @@ public class StateRepository {
 
     public static List<String> findAllNames() {
         final List<String> names = new ArrayList<>();
-        final String sql = "select STATE_NAME from STATES";
+        final String sql = "select STATE from STATES";
         try (final Connection conn = DBHelper.getConnection();
         ) {
             final PreparedStatement state = conn.prepareStatement(sql);
@@ -107,7 +121,7 @@ public class StateRepository {
     }
 
     public static String getNameById(final long id) {
-        final String sql = "select STATE_NAME from STATES WHERE STATE_ID = ?";
+        final String sql = "select STATE from STATES WHERE STATE_ID = ?";
         try (final Connection conn = DBHelper.getConnection();
         ) {
             final PreparedStatement state = conn.prepareStatement(sql);
@@ -124,7 +138,7 @@ public class StateRepository {
     }
 
     public static Long getIdByName(final String name) {
-        final String sql = "select STATE_ID from STATES WHERE STATE_NAME = ?";
+        final String sql = "select STATE_ID from STATES WHERE STATE = ?";
         try (final Connection conn = DBHelper.getConnection();
         ) {
             final PreparedStatement state = conn.prepareStatement(sql);
