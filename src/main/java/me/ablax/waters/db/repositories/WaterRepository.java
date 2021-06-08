@@ -136,7 +136,7 @@ public class WaterRepository {
             searchWord2 = " = ";
         }
 
-        final String sql = "select * from WATER_BODY where " + selectedItem + searchWord + "?" + (selectedItem.equalsIgnoreCase(selectedItem2) ? " OR " : " AND ") + selectedItem2 + searchWord2 + "?";
+        final String sql = "select * from WATER_BODY where " + selectedItem + searchWord + "?" + (selectedItem.equalsIgnoreCase(selectedItem2) ? "; -- " : " AND ") + selectedItem2 + searchWord2 + "?";
         try (final Connection conn = DBHelper.getConnection();
         ) {
             final PreparedStatement state = conn.prepareStatement(sql);
