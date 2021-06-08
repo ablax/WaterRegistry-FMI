@@ -81,7 +81,7 @@ public class SupervisorRepository {
             searchWord2 = " = ";
         }
 
-        final String sql = "select * from SUPERVISOR where " + selectedItem + searchWord + "? AND " + selectedItem2 + searchWord2 + "?";
+        final String sql = "select * from SUPERVISOR where " + selectedItem + searchWord + "?" + (selectedItem.equalsIgnoreCase(selectedItem2) ? " OR " : " AND ") + selectedItem2 + searchWord2 + "?";
         try (final Connection conn = DBHelper.getConnection();
         ) {
             final PreparedStatement state = conn.prepareStatement(sql);
